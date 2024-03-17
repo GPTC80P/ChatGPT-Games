@@ -1,0 +1,188 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+// Function to print the Tic Tac Toe board
+void printBoard(const vector<char>& board) {
+    cout << "\n\n";
+    cout << " " << board[0] << " | " << board[1] << " | " << board[2] << endl;
+    cout << "---|---|---" << endl;
+    cout << " " << board[3] << " | " << board[4] << " | " << board[5] << endl;
+    cout << "---|---|---" << endl;
+    cout << " " << board[6] << " | " << board[7] << " | " << board[8] << endl;
+    cout << "\n\n";
+}
+
+// Function to check if a player has won
+bool checkWin(const vector<char>& board, char mark) {
+    return ((board[0] == mark && board[1] == mark && board[2] == mark) ||   // top row
+            (board[3] == mark && board[4] == mark && board[5] == mark) ||   // middle row
+            (board[6] == mark && board[7] == mark && board[8] == mark) ||   // bottom row
+            (board[0] == mark && board[3] == mark && board[6] == mark) ||   // left column
+            (board[1] == mark && board[4] == mark && board[7] == mark) ||   // middle column
+            (board[2] == mark && board[5] == mark && board[8] == mark) ||   // right column
+            (board[0] == mark && board[4] == mark && board[8] == mark) ||   // diagonal
+            (board[2] == mark && board[4] == mark && board[6] == mark));    // diagonal
+}
+
+// Function to check if the board is full
+bool checkDraw(const vector<char>& board) {
+    for (char c : board) {
+        if (c != 'X' && c != 'O') {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Function to get player's move
+int getPlayerMove(const vector<char>& board) {
+    int move;
+    cout << "Enter your move (1-9): ";
+    cin >> move;
+    return move - 1;
+}
+
+// Function to get computer's move
+int getComputerMove(const vector<char>& board, int difficulty) {
+    if (difficulty == 1) {
+        // Easy: Choose a random available move
+        srand(time(nullptr));
+        int move;
+        do {
+            move = rand() % 9;
+        } while (board[move] == 'X' || board[move] == 'O');
+        return move;
+    } else if (difficulty == 2) {
+        // Medium: Same as current implementation
+        srand(time(nullptr));
+        int move;
+        do {
+            move = rand() % 9;
+        } while (board[move] == 'X' || board[move] == 'O');
+        return move;
+    } else if (difficulty == 3) {
+        // Impossible: Block player's win if possible, else random
+        for (int i = 0; i < 9; ++i) {
+            if (board[i] != 'X' && board[i] != 'O') {
+                vector<char> testBoard = board;
+                testBoard[i] = 'O';
+                if (checkWin(testBoard, 'O')) {
+                    return i;
+                }
+            }
+        }
+
+        // Next, check if player can win in the next move and block
+        for (int i = 0; i < 9; ++i) {
+            if (board[i] != 'X' && board[i] != 'O') {
+                vector<char> testBoard = board;
+                testBoard[i] = 'X';
+                if (checkWin(testBoard, 'X')) {
+                    return i;
+                }
+            }
+        }
+
+        // Then, prioritize corners
+        vector<int> corners = {0, 2, 6, 8};
+        for (int corner : corners) {
+            if (board[corner] != 'X' && board[corner] != 'O') {
+                return corner;
+            }
+        }
+
+        // Next, prioritize center
+        if (board[4] != 'X' && board[4] != 'O') {
+            return 4;
+        }
+
+        // Lastly, choose a random available move
+        srand(time(nullptr));
+        int move;
+        do {
+            move = rand() % 9;
+        } while (board[move] == 'X' || board[move] == 'O');
+
+        return move;
+    }
+}
+
+int main() {
+    int difficulty;
+    char playAgain;
+
+    cout << "Welcome to Tic Tac Toe Extreme by Todd Cavell!\n\n";
+
+    do {
+        int playerScore = 0;
+        int computerScore = 0;
+
+        cout << "Choose computer difficulty (1: Easy, 2: Medium, 3: Impossible): ";
+        cin >> difficulty;
+
+        while (playerScore < 2 && computerScore < 2) {
+            cout << "Round " << (playerScore + computerScore + 1) << " - FIGHT!\n";
+
+            vector<char> board = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+            bool playerTurn = true;  // Player starts the game
+            bool gameOver = false;
+            char currentPlayer = 'X'; // Player 1 starts with X
+
+            cout << "Let's begin!\n";
+
+            printBoard(board);
+
+            while (!gameOver) {
+                int move;
+                if (playerTurn) {
+                    move = getPlayerMove(board);
+                } else {
+                    move = getComputerMove(board, difficulty);
+                    cout << "Computer chooses position " << move + 1 << endl;
+                }
+
+                if (board[move] != 'X' && board[move] != 'O') {
+                    board[move] = currentPlayer;
+                    printBoard(board);
+
+                    if (checkWin(board, currentPlayer)) {
+                        if (currentPlayer == 'X') {
+                            cout << "Congratulations! You win!\n";
+                            playerScore++;
+                        } else {
+                            cout << "Computer wins!\n";
+                            computerScore++;
+                        }
+                        cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
+                        gameOver = true;
+                    } else if (checkDraw(board)) {
+                        cout << "It's a draw!\n";
+                        cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
+                        gameOver = true;
+                    } else {
+                        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                        playerTurn = !playerTurn;
+                    }
+                } else {
+                    cout << "Invalid move. Try again.\n";
+                }
+            }
+        }
+
+        if (playerScore > computerScore) {
+            cout << "Congratulations! You win the game!\n";
+        } else {
+            cout << "Computer wins the game!\n";
+        }
+
+        cout << "Do you want to play again? (Y/N): ";
+        cin >> playAgain;
+
+    } while (playAgain == 'Y' || playAgain == 'y');
+
+    return 0;
+}
