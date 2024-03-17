@@ -114,12 +114,8 @@ int getComputerMove(const vector<char>& board, int difficulty) {
 // Function to get player's choice of symbol
 char getPlayerSymbol() {
     char symbol;
-    cout << "Choose your symbol (X, O, or R for Random): ";
+    cout << "Choose your symbol (X or O): ";
     cin >> symbol;
-    if (symbol == 'R' || symbol == 'r') {
-        srand(time(nullptr));
-        symbol = (rand() % 2 == 0) ? 'X' : 'O'; // Randomly choose X or O
-    }
     return symbol;
 }
 
@@ -133,60 +129,75 @@ int main() {
         int playerScore = 0;
         int computerScore = 0;
 
-        char playerSymbol = getPlayerSymbol();
-        char computerSymbol = (playerSymbol == 'X') ? 'O' : 'X';
-
-        cout << "You are playing as " << playerSymbol << ". Computer is " << computerSymbol << ".\n";
+        char playerSymbol;
+        char computerSymbol;
 
         cout << "Choose computer difficulty (1: Easy, 2: Medium, 3: Impossible): ";
         cin >> difficulty;
 
-        while (playerScore < 2 && computerScore < 2) {
-            cout << "Round " << (playerScore + computerScore + 1) << " - FIGHT!\n";
+        for (int set = 1; set <= 2; ++set) {
+            cout << "Set " << set << ":\n";
 
-            vector<char> board = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-            bool playerTurn = true;  // Player starts the game
-            bool gameOver = false;
-            char currentPlayer = (rand() % 2 == 0) ? playerSymbol : computerSymbol;
+            int round = 1;
 
-            cout << "Let's begin!\n";
-
-            printBoard(board);
-
-            while (!gameOver) {
-                int move;
-                if ((currentPlayer == playerSymbol && playerTurn) || (currentPlayer == computerSymbol && !playerTurn)) {
-                    move = getPlayerMove(board);
+            while (playerScore < 2 && computerScore < 2) {
+                cout << "Round " << round << ":\n";
+                if (round == 1) {
+                    playerSymbol = getPlayerSymbol();
+                    computerSymbol = (playerSymbol == 'X') ? 'O' : 'X';
                 } else {
-                    move = getComputerMove(board, difficulty);
-                    cout << "Computer chooses position " << move + 1 << endl;
+                    playerSymbol = (round % 2 == 1) ? 'O' : 'X';
+                    computerSymbol = (playerSymbol == 'X') ? 'O' : 'X';
                 }
 
-                if (board[move] != 'X' && board[move] != 'O') {
-                    board[move] = currentPlayer;
-                    printBoard(board);
+                cout << "You are playing as " << playerSymbol << ". Computer is " << computerSymbol << ".\n";
 
-                    if (checkWin(board, currentPlayer)) {
+                vector<char> board = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+                bool playerTurn = (playerSymbol == 'X');  // Player starts if they are X
+                bool gameOver = false;
+                char currentPlayer = (playerTurn) ? playerSymbol : computerSymbol;
+
+                cout << "Let's begin!\n";
+                printBoard(board);
+
+                while (!gameOver) {
+                    int move;
+                    if ((currentPlayer == playerSymbol && playerTurn) || (currentPlayer == computerSymbol && !playerTurn)) {
                         if (currentPlayer == playerSymbol) {
-                            cout << "Congratulations! You win!\n";
-                            playerScore++;
+                            move = getPlayerMove(board);
                         } else {
-                            cout << "Computer wins!\n";
-                            computerScore++;
+                            move = getComputerMove(board, difficulty);
+                            cout << "Computer chooses position " << move + 1 << endl;
                         }
-                        cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
-                        gameOver = true;
-                    } else if (checkDraw(board)) {
-                        cout << "It's a draw!\n";
-                        cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
-                        gameOver = true;
-                    } else {
-                        currentPlayer = (currentPlayer == playerSymbol) ? computerSymbol : playerSymbol;
-                        playerTurn = !playerTurn;
                     }
-                } else {
-                    cout << "Invalid move. Try again.\n";
+
+                    if (board[move] != 'X' && board[move] != 'O') {
+                        board[move] = currentPlayer;
+                        printBoard(board);
+
+                        if (checkWin(board, currentPlayer)) {
+                            if (currentPlayer == playerSymbol) {
+                                cout << "Congratulations! You win!\n";
+                                playerScore++;
+                            } else {
+                                cout << "Computer wins!\n";
+                                computerScore++;
+                            }
+                            cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
+                            gameOver = true;
+                        } else if (checkDraw(board)) {
+                            cout << "It's a draw!\n";
+                            cout << "Player: " << playerScore << "  Computer: " << computerScore << "\n";
+                            gameOver = true;
+                        } else {
+                            currentPlayer = (currentPlayer == playerSymbol) ? computerSymbol : playerSymbol;
+                            playerTurn = !playerTurn;
+                        }
+                    } else {
+                        cout << "Invalid move. Try again.\n";
+                    }
                 }
+                round++;
             }
         }
 
